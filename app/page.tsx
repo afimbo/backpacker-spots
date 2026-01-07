@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link' // 追加: Next.jsのリンクコンポーネント
 
 type Spot = {
   id: string
@@ -62,9 +63,10 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {spots.map((spot) => (
-              <div
+              <Link
+                href={`/spots/${spot.id}`}
                 key={spot.id}
-                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer block"
               >
                 <div className="flex items-start justify-between mb-3">
                   <h2 className="text-xl font-bold text-gray-800 flex-1">
@@ -111,7 +113,7 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
