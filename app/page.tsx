@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import Link from 'next/link' // 追加: Next.jsのリンクコンポーネント
+import Link from 'next/link'
 
 type Spot = {
   id: string
@@ -19,6 +19,8 @@ type Spot = {
 export default function Home() {
   const [spots, setSpots] = useState<Spot[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('') // 修正: setSearchQUery → setSearchQuery
+  const [selectedType, setSelectedType] = useState<string>('all')
 
   useEffect(() => {
     async function fetchSpots() {
@@ -38,6 +40,21 @@ export default function Home() {
     fetchSpots()
   }, [])
 
+  // フィルター処理
+  const filteredSpots = spots.filter((spot) => {
+    const matchesSearch = 
+      searchQuery === '' ||
+      spot.spot_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      spot.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (spot.city && spot.city.toLowerCase().includes(searchQuery.toLowerCase()))
+    
+    const matchesType = 
+      selectedType === 'all' || 
+      spot.spot_type === selectedType
+
+    return matchesSearch && matchesType
+  })
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -55,14 +72,66 @@ export default function Home() {
         <p className="text-center text-gray-600 mb-12">
           世界中のバックパッカーが共有する目的地情報
         </p>
+        <div className="mb-8 space-y-4">
+          <input
+            type="text"
+            placeholder="🔍 国名、都市名、目的地名で検索..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
 
-        {spots.length === 0 ? (
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedType('all')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                selectedType === 'all'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              全て
+            </button>
+            <button
+              onClick={() => setSelectedType('hostel')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                selectedType === 'hostel'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🏠 ホステル
+            </button>
+            <button
+              onClick={() => setSelectedType('temple')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                selectedType === 'temple'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🛕 寺院
+            </button>
+            <button
+              onClick={() => setSelectedType('street')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                selectedType === 'street'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🛣️ ストリート
+            </button>
+          </div>
+        </div>
+
+        {filteredSpots.length === 0 ? (
           <p className="text-center text-gray-500">
-            まだ目的地が登録されていません
+            該当する目的地が見つかりません
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {spots.map((spot) => (
+            {filteredSpots.map((spot) => (
               <Link
                 href={`/spots/${spot.id}`}
                 key={spot.id}
